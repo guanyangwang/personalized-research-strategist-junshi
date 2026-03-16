@@ -132,6 +132,10 @@ Edit `SKILL.md` to adjust:
 - Digest format and sections
 - How aggressively the skill suggests bold vs. conservative ideas
 
+## License
+
+This project is licensed under the Apache License 2.0. 
+
 ---
 
 Built with the [skill-creator](https://github.com/anthropics/claude-code) plugin for Claude Code.
