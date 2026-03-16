@@ -1,4 +1,4 @@
-# Research Advisor — General (Claude Code Skill)
+# Research Advisor - 军师 (Claude Code Skill)
 
 A Claude Code skill that acts as your daily **军师** (strategic research advisor) for **any academic field**. Tell it your research problem and point it to your papers — it monitors arxiv and top venues every day, reads your work, and proposes bold, ranked research ideas saved as a daily digest.
 
