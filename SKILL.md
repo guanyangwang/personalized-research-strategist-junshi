@@ -29,7 +29,7 @@ Ask these questions — but keep it conversational, not a form. If the user alre
   - If they don't answer: infer from their research area using `references/venues.md`. Pick the 4-6 most prominent venues for their field and tell them what you chose. They can correct you.
 - **Arxiv categories**: Which arxiv categories are most relevant?
   - If they don't answer: infer from their field using `references/venues.md`. Tell them what you picked.
-- **Preliminary results**: Any early results or hypotheses to factor in? (fully optional)
+- **Preliminary results**: Any early experimental results, observations, or hypotheses — even informal, partial, or surprising ones. These are often the most valuable input. Numbers, patterns, things that worked or failed unexpectedly, conjectures not yet tested. Tell the user: "A single surprising observation can unlock better ideas than a finished paper." Users can add results anytime: "add a preliminary result: [result]"
 
 Never block on missing answers. Make a confident default choice and say so — e.g., "I'll watch NeurIPS, ICML, ICLR, and CVPR for you — let me know if you'd like to add or swap any."
 
@@ -76,6 +76,14 @@ Save to `~/.claude/research-advisor/profile.md`:
 ## Problem Statement
 [The rough problem the user gave you, with your interpretation]
 
+## Preliminary Results
+[All results, observations, and hypotheses the user has shared.
+Append new entries — never overwrite old ones.
+Format:
+- [Date] [Observation, as specific as possible]
+  → [Your interpretation: what does this suggest or imply?]
+]
+
 ## Last Updated
 [Date]
 ```
@@ -111,16 +119,18 @@ Run one broad search (field-level) and one targeted search (user's specific prob
 
 From 50-80 candidates, select the **10 most relevant** based on the research profile.
 
-### Step 2: Search target venues
+### Step 2: Search target venues (MANDATORY — do not skip)
 
-Use WebSearch to find recent papers at each of the user's target venues. See `references/venues.md` for search URL patterns for common venues.
+This step runs every day. Venue papers are peer-reviewed and field-defining — they provide depth and credibility that arxiv alone cannot. Run all venue searches in parallel.
 
-For any venue not in that reference, use:
+Use WebSearch with patterns from `references/venues.md` for each of the user's target venues. For any venue not in that reference:
 ```
 site:[venue-proceedings-url] [user's keywords]
 ```
 
-Focus on papers from the last 1-2 years. Pick 3-5 papers per venue that seem most relevant. Combine with arxiv results, deduplicate, keep top **8-10 most relevant overall**.
+For each promising result, fetch its arXiv preprint abstract via `https://arxiv.org/abs/[ID]` if available.
+
+Focus on papers from the last 1-2 years. Pick the **3-5 most relevant papers total** across all venues. In the digest, list venue papers and arxiv papers in **separate subsections**.
 
 ### Step 3: Summarize relevant papers
 
@@ -136,12 +146,19 @@ For each of the top papers:
 
 ### Step 4: Generate bold ideas (军师 mode)
 
-Think strategically — don't just summarize papers, **generate ideas**:
+**First, read the Preliminary Results section of the profile.** These are your sharpest inputs — real observations the researcher has made but hasn't yet turned into a paper. For each result:
+- What does it imply? Does it confirm or contradict what today's papers assume?
+- If unexpected, what would *explain* it? That explanation is often the paper.
+- If promising, what's the missing piece to make it publishable?
+
+**Ideas grounded in preliminary results get a bonus** — note explicitly which result motivated each idea. These tend to be more original and more defensible to reviewers.
+
+Then think strategically about today's papers:
 
 - What assumption do these papers share that could be challenged?
 - What combination of ideas from Paper A and Paper B has nobody tried?
 - What would make this result 10x stronger, faster, or more general?
-- What does your researcher know (from their profile) that the community hasn't fully exploited?
+- What does your researcher know (from their profile and prelim results) that the community hasn't fully exploited?
 - What problem does this set of papers accidentally reveal that nobody is addressing?
 
 Generate **8-10 raw ideas**. Each should be a specific, actionable direction — not "explore X" but "do Y to achieve Z, enabled by insight W."

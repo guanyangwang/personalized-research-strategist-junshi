@@ -1,4 +1,4 @@
-# Research Advisor - 军师 (Claude Code Skill)
+# Research Advisor — General (Claude Code Skill)
 
 A Claude Code skill that acts as your daily **军师** (strategic research advisor) for **any academic field**. Tell it your research problem and point it to your papers — it monitors arxiv and top venues every day, reads your work, and proposes bold, ranked research ideas saved as a daily digest.
 
@@ -79,6 +79,19 @@ Each digest is saved to `~/.claude/research-advisor/digests/YYYY-MM-DD.md`:
 - **Ranked ideas** — top 3-5 bold directions with scores, pitch, first experiment, and main risk
 - **Raw ideas** — unfiltered brainstorm
 
+Example idea entry:
+
+```
+### [Rank 1] Amortized Noise Flow for Few-Step Generators
+Score: Novelty 5/5 · Feasibility 4/5 · Impact 4/5 → 4.6/5
+The pitch: Train a lightweight flow f: N(0,I) → z* that outputs good starting
+noise in a single forward pass, replacing expensive per-instance optimization.
+Why now: Weak prior paper shows z* exists; VFM shows noise adapters work for
+conditional generation — the unconditional version is wide open.
+First experiment: Use AdamSphere-optimized z* from 1000 images as pseudo-labels.
+Train a small flow. Measure 1-step generation quality vs. random Gaussian noise.
+Main risk: Defining a training signal without explicit ground-truth good noise.
+```
 
 ## Supported Fields
 
@@ -118,10 +131,6 @@ Edit `SKILL.md` to adjust:
 - Number of ideas per digest
 - Digest format and sections
 - How aggressively the skill suggests bold vs. conservative ideas
-
-## License
-
-This project is licensed under the Apache License 2.0. 
 
 ---
 
