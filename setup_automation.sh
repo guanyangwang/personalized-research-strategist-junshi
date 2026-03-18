@@ -27,37 +27,27 @@ read -p "Path to your papers folder (e.g. ~/papers, press Enter to skip): " PAPE
 PAPERS_FOLDER=${PAPERS_FOLDER:-""}
 
 # --- Output folder ---
-DIGEST_DIR="$HOME/.claude/junshi/digests"
+DIGEST_DIR="$HOME/.claude/research-junshi/digests"
 mkdir -p "$DIGEST_DIR"
 echo "Digests will be saved to: $DIGEST_DIR"
 
-# --- Write permissions settings file ---
-SETTINGS_DIR="$HOME/.claude/junshi"
-SETTINGS_FILE="$SETTINGS_DIR/automation_settings.json"
-mkdir -p "$SETTINGS_DIR"
-
-cat > "$SETTINGS_FILE" <<EOF
-{
-  "permissions": {
-    "allow": [
-      "WebFetch",
-      "WebSearch",
-      "Read",
-      "Write",
-      "Bash(mkdir:*)",
-      "Bash(pdftotext:*)"
-    ],
-    "deny": []
-  }
-}
-EOF
-echo "Permissions config written to: $SETTINGS_FILE"
+# --- Check profile exists before scheduling ---
+PROFILE_FILE="$HOME/.claude/research-junshi/profile.md"
+if [ ! -f "$PROFILE_FILE" ]; then
+  echo ""
+  echo "Error: No profile found at $PROFILE_FILE"
+  echo "Please run Junshi manually once first to complete setup:"
+  echo "  Run research-junshi."
+  echo "Then re-run this script to set up automation."
+  exit 1
+fi
+echo "Profile found at: $PROFILE_FILE"
 
 # --- Build the prompt ---
 if [ -n "$PAPERS_FOLDER" ]; then
-  PROMPT="Run my research advisor daily digest. My papers are in $PAPERS_FOLDER. Load my profile from ~/.claude/junshi/profile.md if it exists, otherwise do setup first. Save today's digest to ~/.claude/junshi/digests/\$(date +%Y-%m-%d).md"
+  PROMPT="Run research-junshi. My papers are in $PAPERS_FOLDER. Load my profile from ~/.claude/research-junshi/profile.md and save today's digest to ~/.claude/research-junshi/digests/\$(date +%Y-%m-%d).md"
 else
-  PROMPT="Run my research advisor daily digest. Load my profile from ~/.claude/junshi/profile.md and save today's digest to ~/.claude/junshi/digests/\$(date +%Y-%m-%d).md"
+  PROMPT="Run research-junshi. Load my profile from ~/.claude/research-junshi/profile.md and save today's digest to ~/.claude/research-junshi/digests/\$(date +%Y-%m-%d).md"
 fi
 
 # --- Write cron job ---
@@ -96,4 +86,4 @@ echo "To remove it:"
 echo "  crontab -l | grep -v research-junshi | crontab -"
 echo ""
 echo "To run a digest right now:"
-echo "  $CLAUDE_BIN --dangerously-skip-permissions -p \"Run my Junshi daily digest.\""
+echo "  $CLAUDE_BIN --dangerously-skip-permissions -p \"Run research-junshi.\""

@@ -1,6 +1,6 @@
 ---
 name: research-junshi
-description: Daily research idea generator and 军师 (strategic advisor) for any academic research area. Reads your papers, monitors arxiv and configurable top venues daily, and proposes bold, ranked research ideas saved as a daily digest. Invoke this skill whenever the user asks for research ideas, says "what should I work on", asks to see today's arxiv, wants a paper digest, wants to brainstorm their next project, or wants strategic research advice in any field. Also use this when the user says they want to stay on top of the literature, regardless of domain.
+description: Daily research idea generator and 军师 (strategic advisor) for any academic research area. Reads your papers, monitors arXiv and configurable top venues daily, and proposes bold, ranked research ideas saved as a daily digest. Invoke this skill whenever the user asks for research ideas, says "what should I work on", asks to see today's arXiv, wants a paper digest, wants to brainstorm their next project, or wants strategic research advice in any field. Also use this when the user says they want to stay on top of the literature, regardless of domain.
 ---
 
 # Junshi (军师)
@@ -19,21 +19,23 @@ On the very first run (or when the user says "update my profile" / "update my co
 
 Ask these questions — but keep it conversational, not a form. If the user already gave some answers in their initial message, skip those.
 
-**Required:**
+**Ask for (but never block on — make a confident default if skipped):**
 - **Research area**: What field(s) do you work in?
 - **Problem description**: What rough problem are you thinking about?
 - **Papers folder path**: Where are your PDF papers? (skip if they say they have none)
 
-**Optional (ask, but fill in yourself if they skip or forget):**
+**Also ask, but fill in yourself if they skip or forget:**
 - **Target venues**: Which conferences/journals matter most to you?
   - If they don't answer: infer from their research area using `references/venues.md`. Pick the 4-6 most prominent venues for their field and tell them what you chose. They can correct you.
-- **Arxiv categories**: Which arxiv categories are most relevant?
+- **arXiv categories**: Which arxiv categories are most relevant?
   - If they don't answer: infer from their field using `references/venues.md`. Tell them what you picked.
 - **Preliminary results**: Any early experimental results, observations, or hypotheses — even informal, partial, or surprising ones. These are often the most valuable input. Numbers, patterns, things that worked or failed unexpectedly, conjectures not yet tested. Tell the user: "A single surprising observation can unlock better ideas than a finished paper." Users can add results anytime: "add a preliminary result: [result]"
 
 Never block on missing answers. Make a confident default choice and say so — e.g., "I'll watch NeurIPS, ICML, ICLR, and CVPR for you — let me know if you'd like to add or swap any."
 
 ### 2. Read the researcher's papers
+
+If no papers folder was provided or it doesn't exist, skip this step entirely and proceed to step 3 with an empty profile.
 
 Use the Read tool (with page ranges for large files) or Bash with `pdftotext` on each PDF in the specified folder. For each paper, extract:
 - Core technical contribution and methodology
@@ -44,7 +46,9 @@ Use the Read tool (with page ranges for large files) or Bash with `pdftotext` on
 
 ### 3. Build the research profile
 
-Save to `~/.claude/junshi/profile.md`:
+> **Note on paths**: The skill is installed at `~/.claude/skills/research-junshi/` and all user data is stored under `~/.claude/research-junshi/`.
+
+Save to `~/.claude/research-junshi/profile.md`:
 
 ```markdown
 # Research Profile
@@ -55,7 +59,7 @@ Save to `~/.claude/junshi/profile.md`:
 ## Target Venues
 [List of conferences/journals to monitor]
 
-## Arxiv Categories
+## arXiv Categories
 [List of arxiv category codes, e.g. cs.CL, cs.LG]
 
 ## Research Themes
@@ -90,13 +94,13 @@ Format:
 
 ### 4. Save config
 
-Save to `~/.claude/junshi/config.md`:
+Save to `~/.claude/research-junshi/config.md`:
 ```markdown
 # Config
 - Papers folder: [path]
 - Problem: [problem statement]
 - Research area: [field]
-- Arxiv categories: [comma-separated list]
+- arXiv categories: [comma-separated list]
 - Target venues: [comma-separated list]
 ```
 
@@ -104,24 +108,24 @@ Save to `~/.claude/junshi/config.md`:
 
 ## Daily Digest Workflow
 
-On each daily run, load `~/.claude/junshi/profile.md` and `config.md` first. Then:
+On each daily run, load `~/.claude/research-junshi/profile.md` and `config.md` first. Then:
 
-### Step 1: Search arxiv (last 24 hours)
+### Step 1: Search arXiv (last 24 hours)
 
-Use WebFetch to query the arxiv API using the categories and keywords from the user's config.
+Use WebFetch to query the arXiv API using the categories and keywords from the user's config.
 
 **Template URL** (fill in categories and keywords from profile):
 ```
 https://export.arxiv.org/api/query?search_query=cat:[CATEGORY]+AND+([KEYWORD1]+OR+[KEYWORD2]+OR+[KEYWORD3])&start=0&max_results=50&sortBy=submittedDate&sortOrder=descending
 ```
 
-Run one broad search (field-level) and one targeted search (user's specific problem keywords). Parse the XML response — extract titles, abstracts, and arxiv IDs from `<entry>` blocks.
+Run one broad search (field-level) and one targeted search (user's specific problem keywords). Parse the XML response — extract titles, abstracts, and arXiv IDs from `<entry>` blocks.
 
-From 50-80 candidates, select the **10 most relevant** based on the research profile.
+From up to 100 candidates (two searches × 50 results each), select the **10 most relevant** based on the research profile.
 
 ### Step 2: Search target venues (MANDATORY — do not skip)
 
-This step runs every day. Venue papers are peer-reviewed and field-defining — they provide depth and credibility that arxiv alone cannot. Run all venue searches in parallel.
+This step runs every day. Venue papers are peer-reviewed and field-defining — they provide depth and credibility that arXiv alone cannot. Run all venue searches in parallel.
 
 Use WebSearch with patterns from `references/venues.md` for each of the user's target venues. For any venue not in that reference:
 ```
@@ -130,14 +134,14 @@ site:[venue-proceedings-url] [user's keywords]
 
 For each promising result, fetch its arXiv preprint abstract via `https://arxiv.org/abs/[ID]` if available.
 
-Focus on papers from the last 1-2 years. Pick the **3-5 most relevant papers total** across all venues. In the digest, list venue papers and arxiv papers in **separate subsections**.
+Focus on papers from the last 1-2 years. Pick the **3-5 most relevant papers total** across all venues. In the digest, list venue papers and arXiv papers in **separate subsections**.
 
 ### Step 3: Summarize relevant papers
 
 For each of the top papers:
 
 ```
-**[Title]** ([arxiv ID or venue + year])
+**[Title]** ([arXiv ID or venue + year])
 - **Core idea**: [1-2 sentences — the actual technical contribution]
 - **Key insight**: [The clever trick or framing that makes it work]
 - **What it leaves open**: [Limitations, assumptions, or future work implied]
@@ -176,7 +180,7 @@ Select the top 3-5.
 
 ### Step 6: Save the daily digest
 
-Save to `~/.claude/junshi/digests/YYYY-MM-DD.md`:
+Save to `~/.claude/research-junshi/digests/YYYY-MM-DD.md`:
 
 ```markdown
 # Research Digest — [DATE]
@@ -186,8 +190,8 @@ Save to `~/.claude/junshi/digests/YYYY-MM-DD.md`:
 
 ## Papers Read
 
-### Arxiv
-[Summaries of top arxiv papers]
+### arXiv
+[Summaries of top arXiv papers]
 
 ### [Venue 1], [Venue 2], ...
 [Summaries of relevant venue papers]
@@ -214,7 +218,7 @@ Save to `~/.claude/junshi/digests/YYYY-MM-DD.md`:
 
 After saving:
 1. One-line summary of today's landscape
-2. Top 3 ideas (title + 1-sentence pitch + score)
+2. Top 3-5 ideas (title + 1-sentence pitch + score)
 3. Path to the full digest file
 4. Offer automation setup (see below)
 
@@ -237,8 +241,8 @@ After generating a digest, offer:
 
 If the user asks to set up automation:
 1. Tell them to run `setup_automation.sh`
-2. Warn that it uses `--dangerously-skip-permissions` — scoped to read/write/web only, no destructive ops
-3. Digests will appear in `~/.claude/junshi/digests/` each morning
+2. Warn that it uses `--dangerously-skip-permissions` — this bypasses all permission prompts with no technical scope enforcement; the prompt is designed to only read/write/web-search, but the user should review the script and run only in a trusted local environment
+3. Digests will appear in `~/.claude/research-junshi/digests/` each morning
 
 ---
 
